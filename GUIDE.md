@@ -443,10 +443,38 @@ user.addSearch("name,email", keyword, "LIKE");
 #### POST 데이터 (원본 보존)
 
 ```jsp
-// ✅ Form submit, 에디터 내용 등
+// ❌ 불필요한 변수화 (모든 파라미터를 변수로 만들 필요 없음)
 if(m.isPost()) {
+    String name = f.get("name");
+    String email = f.get("email");
+    String phone = f.get("phone");
+
+    user.item("name", name);
+    user.item("email", email);
+    user.item("phone", phone);
+}
+
+// ✅ 올바름 (필요한 경우만 변수화)
+if(m.isPost()) {
+    // 비교나 검증이 필요한 경우만 변수화
+    String passwd = f.get("passwd");
+    if(!passwd.equals(f.get("passwd_confirm"))) {
+        m.jsError("비밀번호가 일치하지 않습니다.");
+        return;
+    }
+
+    // 메소드 호출에 필요한 경우만 변수화
+    String email = f.get("email");
+    if(user.isDuplicateEmail(email)) {
+        m.jsError("이미 등록된 이메일입니다.");
+        return;
+    }
+
+    // 단순 저장은 직접 사용
+    user.item("email", email);
+    user.item("passwd", Malgn.sha256(passwd));
     user.item("name", f.get("name"));
-    user.item("content", f.get("content"));  // HTML 에디터 등 원본 보존
+    user.item("phone", f.get("phone"));
 }
 ```
 
@@ -454,6 +482,7 @@ if(m.isPost()) {
 - **m.rs()**: GET 파라미터는 URL에 노출되므로 XSS 공격 위험 → 자동 필터링
 - **f.get()**: POST 데이터는 DB에 저장할 원본 데이터 → 필터링 없음
 - 출력 시에는 템플릿에서 자동으로 escape 처리
+- **변수는 필요한 경우만**: 비교, 검증, 여러 번 사용 시에만 변수화
 
 ---
 

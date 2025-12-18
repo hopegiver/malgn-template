@@ -13,11 +13,8 @@ f.addElement("passwd", null, "required:'Y'");
 
 // POST 처리 (로그인)
 if(m.isPost() && f.validate()) {
-    String email = f.get("email");
-    String passwd = f.get("passwd");
-
     UserDao user = new UserDao();
-    DataSet info = user.checkLogin(email, Malgn.sha256(passwd));
+    DataSet info = user.checkLogin(f.get("email"), Malgn.sha256(f.get("passwd")));
 
     if(info.next()) {
         // 로그인 성공 - Auth에 정보 저장

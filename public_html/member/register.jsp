@@ -9,21 +9,17 @@ f.addElement("phone", null, "required:'Y'");
 
 // POST 처리 (회원가입)
 if(m.isPost() && f.validate()) {
-    String email = f.get("email");
+    // 비밀번호 확인 (비교가 필요한 경우만 변수화)
     String passwd = f.get("passwd");
-    String passwdConfirm = f.get("passwd_confirm");
-    String name = f.get("name");
-    String phone = f.get("phone");
-
-    // 비밀번호 확인
-    if(!passwd.equals(passwdConfirm)) {
+    if(!passwd.equals(f.get("passwd_confirm"))) {
         m.jsError("비밀번호가 일치하지 않습니다.");
         return;
     }
 
     UserDao user = new UserDao();
 
-    // 이메일 중복 체크
+    // 이메일 중복 체크 (메소드 호출에 필요한 경우만 변수화)
+    String email = f.get("email");
     if(user.isDuplicateEmail(email)) {
         m.jsError("이미 등록된 이메일입니다.");
         return;
@@ -32,8 +28,8 @@ if(m.isPost() && f.validate()) {
     // 회원 정보 저장
     user.item("email", email);
     user.item("passwd", Malgn.sha256(passwd));
-    user.item("name", name);
-    user.item("phone", phone);
+    user.item("name", f.get("name"));
+    user.item("phone", f.get("phone"));
     user.item("reg_date", m.time());
     user.item("status", 1);
 
