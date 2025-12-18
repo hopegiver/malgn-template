@@ -3,7 +3,6 @@
 p.setLayout("main");
 p.setBody("main.index");
 p.setVar("title", "맑은프레임워크 - Home");
-
 p.display();
 
 %>

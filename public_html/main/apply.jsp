@@ -22,10 +22,9 @@ if(m.isPost() && f.validate()) {
     apply.item("reg_date", m.time());
 
     if(apply.insert()) {
-        m.jsAlert("신청이 완료되었습니다. 빠른 시일 내에 연락드리겠습니다.");
-        m.jsReplace("/");
+        j.success("신청이 완료되었습니다. 빠른 시일 내에 연락드리겠습니다.");
     } else {
-        m.jsError("신청 실패: " + apply.getErrMsg());
+        j.error("신청 실패: " + apply.getErrMsg());
     }
     return;
 }
@@ -35,7 +34,6 @@ p.setLayout("main");
 p.setBody("main.apply");
 p.setVar("title", "신청하기");
 p.setVar("form_script", f.getScript());
-
 p.display();
 
 %>

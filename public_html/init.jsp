@@ -10,6 +10,8 @@ p.setRequest(request);
 p.setPageContext(pageContext);
 p.setWriter(out);
 
+Json j = new Json(out);
+
 int userId = 0;
 String userName = "";
 boolean isLogin = false;

@@ -6,28 +6,47 @@
 
 ## 📋 빠른 체크리스트 (코드 작성 후 확인)
 
-코드를 작성한 후 반드시 확인하세요:
-
+### 필수 규칙
 - [ ] **명명 규칙**: `UserDao user`, `DataSet info/list` (userDao ❌, ds ❌)
-- [ ] **Postback**: `if(m.isPost())` 후 `return` 필수
-- [ ] **수정 페이지**: 데이터 조회를 먼저 수행 (POST/GET 모두)
+- [ ] **JSP 파일 시작**: `<%@ page contentType="text/html; charset=utf-8" %><%@ include file="/init.jsp" %><%`
+- [ ] **JSP 파일 종료**: `%>` 뒤에 공백/빈 줄 없음
+- [ ] **JSP import 금지**: 개별 `<%@ page import %>` 절대 금지 (외부 라이브러리 필요 시 DAO에서 처리)
 - [ ] **JSP/HTML 분리**: JSP에 HTML 없음 (완전 분리)
 - [ ] **예외 처리**: try-catch 없음 (boolean 체크)
-- [ ] **파라미터**: GET은 `m.rs()`, POST는 `f.get()`
-- [ ] **SQL Injection**: `query("WHERE id = ?", new Object[]{id})`
-- [ ] **XSS 방지**: 템플릿 `{{변수}}` 사용 (자동 escape)
-- [ ] **날짜 처리**: `VARCHAR(14)` + `m.time()`
-- [ ] **Page 순서**: `setBody()` 먼저, 그 다음 `setVar()`
+- [ ] **Page 순서**: `setLayout()`, `setBody()` 먼저 → 그 다음 `setVar()`
 - [ ] **DataSet**: `next()` 호출 필수
-- [ ] **AJAX**: JSON 응답 (`j.success()` / `j.error()`)
-- [ ] **표준 에러 코드**: `NOT_FOUND`, `UNAUTHORIZED` 등
-- [ ] **유효성 검증**: `f.validate()` 사용 (POST 처리 시)
-- [ ] **로그인 체크**: `if(!isLogin)` 사용 (userId ❌)
-- [ ] **공통 변수**: `userId`, `userName`, `isLogin`은 init.jsp에서 설정
 
-**파일 업로드 시 추가 체크**:
-- [ ] 확장자 검증: `f.addElement("file", null, "allow:'jpg|png|gif'")`
-- [ ] 파일 필수: `f.addElement("file", null, "required:'Y'")`
+### Postback 패턴
+- [ ] **POST 처리**: `if(m.isPost() && f.validate())` 후 `return` 필수
+- [ ] **수정 페이지**: 데이터 조회를 먼저 수행 (POST/GET 모두)
+- [ ] **유효성 검증**: `f.addElement()` + `f.validate()` 사용
+
+### 파라미터 처리
+- [ ] **GET 파라미터**: `m.rs()` 또는 `m.ri()` 사용 (XSS 자동 필터)
+- [ ] **POST 데이터**: `f.get()` 사용 (원본 보존)
+- [ ] **불필요한 변수화 금지**: 비교/검증/여러 번 사용 시만 변수화
+
+### 보안
+- [ ] **SQL Injection 방지**: `query("WHERE id = ?", new Object[]{id})`
+- [ ] **XSS 방지**: 템플릿 `{{변수}}` 사용 (자동 escape)
+- [ ] **파일 업로드 검증**: `f.addElement("file", null, "allow:'jpg|png|gif'")`
+- [ ] **로그인 체크**: `if(!isLogin)` 사용
+
+### 데이터 처리
+- [ ] **Null 체크 불필요**: 맑은프레임워크는 null 리턴 안 함
+- [ ] **DataSet 활용**: 변수 선언 대신 `info.put()` 사용, `p.setVar(info)` 한 번에 전달
+- [ ] **불필요한 변수 금지**: `p.setVar()`에 바로 넣을 수 있으면 변수 선언 금지
+- [ ] **복잡한 쿼리**: JSP에 직접 작성 금지, DAO 메소드로 분리
+- [ ] **날짜 처리**: `VARCHAR(14)` + `m.time()`
+
+### 메시지 처리
+- [ ] **로그인 리다이렉트**: 메시지 없이 `m.redirect()` 사용
+- [ ] **에러 (이전 페이지로)**: `m.jsError()` 사용
+- [ ] **성공 (특정 페이지로)**: `m.jsAlert()` + `m.jsReplace()` 사용
+
+### AJAX 처리
+- [ ] **JSON 응답**: `j.success()` / `j.error()` 사용
+- [ ] **HTML 폼**: `data-ajax="true"` + `data-redirect` 또는 `data-success` 속성
 
 ---
 
@@ -168,6 +187,8 @@ DataSet list = user.find();
 
 ### JSP 파일 작성 규칙
 
+#### 파일 시작 형식
+
 **모든 JSP 파일은 다음 형식으로 시작해야 합니다:**
 
 ```jsp
@@ -180,43 +201,178 @@ DataSet list = user.find();
 - init.jsp가 모든 필요한 import를 처리합니다 (`dao.*`, `malgnsoft.db.*`, `malgnsoft.util.*` 등)
 - contentType을 지정하지 않으면 인코딩 문제가 발생할 수 있습니다
 
+**❌ 절대 금지: JSP에서 개별 import 사용**:
+```jsp
+<%@ page import="java.net.URLEncoder" %>  // ❌ 절대 금지!
+<%@ page import="com.google.gson.*" %>    // ❌ 절대 금지!
+<%@ page import="org.json.*" %>           // ❌ 절대 금지!
+```
+
+**이유**:
+- JSP는 오직 맑은프레임워크의 라이브러리만 사용해야 합니다
+- 외부 라이브러리가 필요한 경우 반드시 DAO 클래스에서 작업하세요
+- JSP는 비즈니스 로직만 담당, 복잡한 처리는 DAO로 분리
+
 **init.jsp의 import 구문**:
 ```jsp
 <%@ page import="java.util.*,java.io.*,malgnsoft.db.*,malgnsoft.util.*,malgnsoft.json.*,dao.*" %>
 ```
 
-**고급 DAO 예제** (커스텀 메소드):
+#### 파일 종료 형식
+
+```jsp
+p.display();
+%>
+```
+
+**중요**: `<%, %>` 앞뒤로 공백 없이 작성
+- ✅ `%>` (올바름)
+- ❌ `%>` + 빈 줄 (불필요한 공백 출력)
+
+#### 빈 줄 규칙
+
+**`p.display()` 앞에 빈 줄 금지**:
+
+```jsp
+// ✅ 올바른 코드
+p.setLayout("main");
+p.setBody("board.board_list");
+p.setVar("title", "게시판");
+p.setVar("form_script", f.getScript());
+p.display();
+
+// ❌ 잘못된 코드 (불필요한 빈 줄)
+p.setLayout("main");
+p.setBody("board.board_list");
+p.setVar("title", "게시판");
+p.setVar("form_script", f.getScript());
+
+p.display();
+```
+
+**이유**: 코드를 간결하게 유지하고, `p.display()`는 마지막 설정 바로 다음에 실행되어야 함을 명확히 표시
+
+#### 불필요한 변수 선언 금지
+
+```jsp
+// ❌ 불필요한 변수 선언
+int total = lm.getTotalNum();
+String pager = lm.getPaging();
+p.setVar("total", total);
+p.setVar("pager", pager);
+
+// ✅ 바로 사용
+p.setVar("total", lm.getTotalNum());
+p.setVar("pager", lm.getPaging());
+```
+
+#### DataSet 객체에 데이터 추가하기
+
+**변수 선언 대신 info.put() 사용**:
+
+```jsp
+// ❌ 비효율적 - 별도 변수 선언
+String regDate = info.s("reg_date");
+String regDateFormat = m.time("yyyy-MM-dd HH:mm", regDate);
+boolean isAuthor = (info.i("user_id") == userId);
+
+p.setVar("reg_date_format", regDateFormat);
+p.setVar("mod_date_format", modDateFormat);
+p.setVar("is_author", isAuthor);
+
+// ✅ 효율적 - info 객체에 직접 추가
+info.put("reg_date_format", m.time("yyyy-MM-dd HH:mm", info.s("reg_date")));
+info.put("is_author", info.i("user_id") == userId);
+
+// 한 번에 전달
+p.setVar(info);
+```
+
+**루프에서 사용**:
+
+```jsp
+DataSet list = lm.getDataSet();
+
+// 각 레코드에 포맷된 데이터 추가
+while(list.next()) {
+    list.put("reg_date_format", m.time("yyyy-MM-dd HH:mm", list.s("reg_date")));
+}
+
+// 한 번에 전달
+p.setLoop("list", list);
+```
+
+**장점**:
+- 불필요한 변수 선언 제거
+- `p.setVar(info)` 한 번으로 모든 데이터 전달
+- 코드가 간결하고 유지보수 쉬움
+
+#### Null 체크 불필요
+
+**맑은프레임워크는 대부분의 함수에서 null을 리턴하지 않습니다**:
+
+```jsp
+// ❌ 불필요한 null 체크
+if(info.s("mod_date") != null && !info.s("mod_date").isEmpty()) {
+    info.put("mod_date_format", m.time("yyyy-MM-dd HH:mm", info.s("mod_date")));
+}
+
+// ❌ 불필요한 빈 문자열 체크 (m.time이 자동 처리)
+if(!info.s("mod_date").isEmpty()) {
+    info.put("mod_date_format", m.time("yyyy-MM-dd HH:mm", info.s("mod_date")));
+}
+
+// ✅ 조건문 없이 바로 사용
+info.put("mod_date_format", m.time("yyyy-MM-dd HH:mm", info.s("mod_date")));
+```
+
+**핵심 원칙**:
+- `info.s()`, `f.get()`, `m.rs()` 등은 null 대신 빈 문자열(`""`) 반환
+- `m.time()` 등 유틸리티 메소드는 빈 문자열/null을 받으면 빈 문자열 반환
+- null 체크, 빈 문자열 체크 모두 불필요한 경우가 많음
+- 코드가 더 간결하고 NullPointerException 걱정 없음
+
+#### 복잡한 쿼리는 DAO 메소드로 분리
+
+**JSP에 복잡한 쿼리를 직접 작성하지 마세요**:
+
+```jsp
+// ❌ JSP에 복잡한 쿼리 직접 작성
+DataSet info = board.query(
+    "SELECT b.*, u.name as user_name " +
+    "FROM tb_board b " +
+    "LEFT JOIN tb_user u ON b.user_id = u.id " +
+    "WHERE b.id = ?",
+    new Object[]{id}
+);
+
+// ✅ DAO 메소드로 분리
+DataSet info = board.getWithUser(id);
+```
+
+**DAO 클래스에 메소드 추가**:
 
 ```java
-package dao;
-
-import malgnsoft.db.*;
-
-public class UserDao extends DataObject {
-    public UserDao() {
-        this.table = "tb_user";
-    }
-
-    // 활성 사용자 조회
-    public DataSet findActive() {
-        return this.find("status = 1");
-    }
-
-    // 이메일로 사용자 찾기
-    public DataSet findByEmail(String email) {
-        return this.find("email = ?", new Object[]{email});
-    }
-
-    // 레벨별 사용자 수
-    public int countByLevel(int level) {
-        DataSet rs = this.query(
-            "SELECT COUNT(*) as cnt FROM " + this.table + " WHERE level = ?",
-            new Object[]{level}
+// BoardDao.java
+public class BoardDao extends DataObject {
+    // 작성자 정보를 포함한 게시글 조회
+    public DataSet getWithUser(int id) {
+        return this.query(
+            "SELECT b.*, u.name as user_name " +
+            "FROM tb_board b " +
+            "LEFT JOIN tb_user u ON b.user_id = u.id " +
+            "WHERE b.id = ?",
+            new Object[]{id}
         );
-        return rs.next() ? rs.i("cnt") : 0;
     }
 }
 ```
+
+**장점**:
+- JSP는 로직만 담당, 데이터 접근은 DAO가 처리
+- 쿼리 재사용 가능
+- 유지보수 용이 (쿼리 수정 시 DAO만 수정)
+- 코드 가독성 향상
 
 ---
 
@@ -437,40 +593,31 @@ int page = m.ri("page");           // 정수 변환
 int id = m.ri("id");
 
 // 검색 조건에 사용
-user.addSearch("name,email", keyword, "LIKE");
+lm.addSearch("name,email", keyword, "LIKE");
 ```
 
 #### POST 데이터 (원본 보존)
 
+**불필요한 변수화 금지 - 필요한 경우만 변수 선언**:
+
 ```jsp
-// ❌ 불필요한 변수화 (모든 파라미터를 변수로 만들 필요 없음)
-if(m.isPost()) {
-    String name = f.get("name");
-    String email = f.get("email");
-    String phone = f.get("phone");
-
-    user.item("name", name);
-    user.item("email", email);
-    user.item("phone", phone);
-}
-
 // ✅ 올바름 (필요한 경우만 변수화)
 if(m.isPost()) {
-    // 비교나 검증이 필요한 경우만 변수화
+    // 1. 비교/검증이 필요한 경우만 변수화
     String passwd = f.get("passwd");
     if(!passwd.equals(f.get("passwd_confirm"))) {
         m.jsError("비밀번호가 일치하지 않습니다.");
         return;
     }
 
-    // 메소드 호출에 필요한 경우만 변수화
+    // 2. 메소드 호출에 필요한 경우만 변수화
     String email = f.get("email");
     if(user.isDuplicateEmail(email)) {
         m.jsError("이미 등록된 이메일입니다.");
         return;
     }
 
-    // 단순 저장은 직접 사용
+    // 3. 단순 저장은 직접 사용
     user.item("email", email);
     user.item("passwd", Malgn.sha256(passwd));
     user.item("name", f.get("name"));
@@ -478,15 +625,96 @@ if(m.isPost()) {
 }
 ```
 
+**변수화가 필요한 경우**:
+- 값을 비교해야 할 때 (예: 비밀번호 확인)
+- 메소드 파라미터로 전달할 때 (예: 중복 체크)
+- 같은 값을 여러 번 사용할 때
+
 **이유**:
 - **m.rs()**: GET 파라미터는 URL에 노출되므로 XSS 공격 위험 → 자동 필터링
 - **f.get()**: POST 데이터는 DB에 저장할 원본 데이터 → 필터링 없음
 - 출력 시에는 템플릿에서 자동으로 escape 처리
-- **변수는 필요한 경우만**: 비교, 검증, 여러 번 사용 시에만 변수화
 
 ---
 
-### 3.6 SQL Injection 방지
+### 3.6 메시지 및 리다이렉트 패턴
+
+#### 로그인 체크 (메시지 없이 리다이렉트)
+
+```jsp
+// ✅ 올바른 코드 - m.redirect() 사용
+if(!isLogin) {
+    m.redirect("/member/login.jsp");
+    return;
+}
+```
+
+**이유**:
+- 로그인이 필요한 페이지에 접근 시 굳이 에러 메시지를 보여줄 필요 없음
+- `m.redirect()`는 서버 측 리다이렉트로 JavaScript보다 효율적
+- 사용자 경험 개선: 바로 로그인 페이지로 이동
+
+#### 에러 처리 (이전 페이지로)
+
+```jsp
+// ✅ m.jsError() - 에러 메시지 + 자동으로 이전 페이지로
+if(!info.next()) {
+    m.jsError("게시글을 찾을 수 없습니다.");
+    return;  // history.back() 자동 실행
+}
+
+if(info.i("user_id") != userId) {
+    m.jsError("수정 권한이 없습니다.");
+    return;
+}
+```
+
+**사용 시기**:
+- 입력값 오류나 처리 오류 - 이전 페이지로 돌아갈 때
+- 자동으로 `history.back()` 실행
+- 원래는 보여지면 안 되는 메시지인데 오류가 난 경우
+- 예: 비밀번호 불일치, 이메일 중복, 데이터 없음, 권한 없음, 처리 실패
+
+#### 성공 처리 (특정 페이지로)
+
+```jsp
+// ✅ m.jsAlert() + m.jsReplace() - 메시지 + 특정 페이지로 이동
+if(board.delete("id = ?", new Object[]{id})) {
+    m.jsAlert("게시글이 삭제되었습니다.");
+    m.jsReplace("board_list.jsp");
+}
+```
+
+**사용 시기**:
+- 성공 메시지를 보여주고 다른 페이지로 이동
+- 예: 등록/수정/삭제 성공 후 목록 페이지로
+
+#### 패턴 요약
+
+```jsp
+// 패턴 1: 메시지 없이 바로 리다이렉트 (로그인 체크)
+if(!isLogin) {
+    m.redirect("/member/login.jsp");  // 서버 리다이렉트
+    return;
+}
+
+// 패턴 2: 에러 메시지 + 이전 페이지로 (에러 처리)
+if(id == 0) {
+    m.jsError("잘못된 접근입니다.");  // history.back() 자동
+    return;
+}
+
+// 패턴 3: 성공 메시지 + 특정 페이지로 (성공 처리)
+if(board.insert()) {
+    m.jsAlert("등록되었습니다.");
+    m.jsReplace("board_list.jsp");
+    return;
+}
+```
+
+---
+
+### 3.7 SQL Injection 방지
 
 #### ❌ 절대 금지: 직접 문자열 연결
 
@@ -505,7 +733,7 @@ user.find("status = ? AND level >= ?", new Object[]{1, 5});
 
 ---
 
-### 3.7 표준 응답 형식 (API/AJAX)
+### 3.8 표준 응답 형식 (API/AJAX)
 
 #### 성공 응답
 
@@ -536,7 +764,7 @@ DATABASE_ERROR     - DB 오류
 
 ---
 
-### 3.8 Page 메소드 호출 순서
+### 3.9 Page 메소드 호출 순서
 
 ```jsp
 // ✅ 올바른 순서
@@ -555,7 +783,7 @@ p.setBody("main.content");
 
 ---
 
-### 3.9 DataSet 사용 (next() 필수)
+### 3.10 DataSet 사용 (next() 필수)
 
 #### ❌ 잘못된 예
 
@@ -616,7 +844,7 @@ p.setLoop("list", list);  // 자동으로 커서를 처음으로 이동
 
 ---
 
-### 3.10 AJAX 응답 처리
+### 3.11 AJAX 응답 처리
 
 #### ❌ 금지: jsReplace/redirect
 
@@ -675,7 +903,7 @@ api.post(() -> {
 
 ---
 
-### 3.11 파일 업로드 검증
+### 3.12 파일 업로드 검증
 
 파일 업로드 시 Form 클래스의 `addElement()`로 검증합니다:
 
@@ -709,7 +937,7 @@ if(m.isPost() && f.validate()) {
 
 ---
 
-### 3.12 날짜/시간 처리 (크로스 DB 호환)
+### 3.13 날짜/시간 처리 (크로스 DB 호환)
 
 #### VARCHAR(14) + m.time() 사용
 
@@ -743,7 +971,7 @@ user.item("reg_date", "NOW()", "function");  // MySQL 종속
 
 ---
 
-### 3.13 인증 처리
+### 3.14 인증 처리
 
 #### init.jsp에서 초기화
 
@@ -766,16 +994,13 @@ p.setVar("userName", userName);
 p.setVar("isLogin", isLogin);
 ```
 
-**템플릿에서 사용**:
-```html
-<!-- ❌ 나쁜 예: userId를 직접 조건으로 사용 -->
-<!--@if(userId)-->
-    <span>환영합니다</span>
-<!--/if(userId)-->
+#### 템플릿에서 사용
 
-<!-- ✅ 좋은 예: 명확한 boolean 변수 사용 -->
+```html
+<!-- ✅ 명확한 boolean 변수 사용 -->
 <!--@if(isLogin)-->
     <span>{{userName}}님 환영합니다</span>
+    <a href="/member/logout.jsp">로그아웃</a>
 <!--/if(isLogin)-->
 
 <!--@nif(isLogin)-->
@@ -788,90 +1013,226 @@ p.setVar("isLogin", isLogin);
 - 템플릿에서 가독성 향상
 - 로그인 로직 변경 시 init.jsp만 수정하면 됨
 
-#### 로그인 처리 예제
+#### 로그인/로그아웃 처리
 
+**로그인 성공 시**:
 ```jsp
-<%@ include file="/init.jsp" %><%
+// Auth에 정보 저장
+auth.put("user_id", info.i("id"));
+auth.put("user_name", info.s("name"));
+auth.save();
 
-f.addElement("id", null, "required:'Y'");
-f.addElement("passwd", null, "required:'Y'");
-
-if(m.isPost() && f.validate()) {
-    String id = f.get("id");
-    String passwd = f.get("passwd");
-
-    // 사용자 확인
-    UserDao user = new UserDao();
-    DataSet info = user.find(
-        "user_id = ? AND passwd = ?",
-        new Object[]{id, Malgn.sha256(passwd)}
-    );
-
-    if(info.next()) {
-        // 로그인 성공 - Auth에 정보 저장
-        auth.put("user_id", info.i("id"));
-        auth.put("user_name", info.s("name"));
-        auth.put("user_level", info.i("level"));
-        auth.save();
-
-        m.jsAlert("로그인 성공");
-        m.jsReplace("/main/index.jsp");
-    } else {
-        m.jsError("아이디 또는 비밀번호가 올바르지 않습니다.");
-    }
-    return;
-}
-
-p.setBody("main.login");
-p.setVar("form_script", f.getScript());
-p.display();
-
-%>
+m.jsAlert(info.s("name") + "님 환영합니다!");
+m.jsReplace("/");
 ```
 
-#### 로그아웃 처리
-
+**로그아웃 시**:
 ```jsp
-<%@ include file="/init.jsp" %><%
-
 auth.delete();  // 인증 정보 삭제
 
 m.jsAlert("로그아웃되었습니다.");
-m.jsReplace("/main/login.jsp");
-
-%>
+m.jsReplace("/");
 ```
 
-#### 개별 페이지에서 확인
+#### 페이지별 권한 체크
 
 ```jsp
-<%@ include file="/init.jsp" %><%
-
-// ✅ 로그인 체크 (boolean 변수 사용)
+// ✅ 로그인 체크
 if(!isLogin) {
-    m.jsError("로그인이 필요합니다.");
-    m.jsReplace("/member/login.jsp");
+    m.redirect("/member/login.jsp");
     return;
 }
 
-// 관리자 체크 (userId 사용 - 권한 레벨 확인 시)
+// ✅ 권한 레벨 확인
 int userLevel = auth.getInt("user_level");
 if(userLevel < 9) {
     m.jsError("관리자 권한이 필요합니다.");
     return;
 }
 
-// 정상 로직 처리
-UserDao user = new UserDao();
-DataSet list = user.find();
+// ✅ 작성자 본인 확인
+if(info.i("user_id") != userId) {
+    m.jsError("수정 권한이 없습니다.");
+    return;
+}
+```
+
+**체크 규칙**:
+- **로그인 여부**: `if(!isLogin)` 사용
+- **권한 레벨**: `userId`, `userLevel` 등 사용
+- **작성자 본인**: `if(info.i("user_id") != userId)` 사용
+
+---
+
+### 3.15 AJAX 폼 처리
+
+#### init.jsp에서 Json 객체 초기화
+
+```jsp
+<%@ page import="java.util.*,java.io.*,malgnsoft.db.*,malgnsoft.util.*,malgnsoft.json.*,dao.*" %><%
+
+Malgn m = new Malgn(request, response, out);
+Form f = new Form();
+Page p = new Page();
+Json j = new Json(out);  // ← AJAX 응답용
+
+// ... 인증 처리 ...
+%>
+```
+
+#### JSP에서 JSON 응답
+
+```jsp
+<%@ include file="/init.jsp" %><%
+
+// 유효성 검증
+f.addElement("email", null, "required:'Y', type:'email'");
+f.addElement("name", null, "required:'Y'");
+
+// POST 처리
+if(m.isPost() && f.validate()) {
+    UserDao user = new UserDao();
+
+    // 이메일 중복 체크
+    if(user.isDuplicateEmail(f.get("email"))) {
+        j.error("이미 등록된 이메일입니다.");
+        return;
+    }
+
+    // 저장
+    user.item("email", f.get("email"));
+    user.item("name", f.get("name"));
+    user.item("reg_date", m.time());
+
+    if(user.insert()) {
+        // ✅ 성공 응답
+        j.success("등록이 완료되었습니다.");
+    } else {
+        // ✅ 에러 응답
+        j.error("등록 실패: " + user.getErrMsg());
+    }
+    return;
+}
+
+// GET 처리 (폼 표시)
+p.setBody("main.user_form");
+p.display();
 
 %>
 ```
 
-**로그인 체크 규칙**:
-- **로그인 여부 확인**: `if(!isLogin)` 사용 (boolean)
-- **권한 레벨 확인**: `userId`, `userLevel` 등 사용 (int)
-- **작성자 본인 확인**: `if(info.i("user_id") != userId)` 사용
+**JSON 응답 형식**:
+```json
+// 성공
+{"success": true, "message": "등록이 완료되었습니다."}
+
+// 실패
+{"success": false, "error": "ERROR", "message": "이미 등록된 이메일입니다."}
+```
+
+#### 추가 데이터 전달 (등록 후 ID 반환)
+
+**등록 시에만 필요 - 새로 생성된 ID 반환**:
+
+```jsp
+// ✅ 등록 페이지
+if(board.insert()) {
+    j.put("board_id", board.id);  // 새로 생성된 ID
+    j.success("게시글이 등록되었습니다.");
+}
+```
+
+**수정 시에는 불필요 - ID를 이미 알고 있음**:
+
+```jsp
+// ✅ 수정 페이지 (j.put() 불필요)
+if(board.update("id = ?", new Object[]{id})) {
+    j.success("게시글이 수정되었습니다.");  // ID 전달 불필요
+}
+```
+
+**등록 응답 예시**:
+```json
+{
+    "success": true,
+    "message": "게시글이 등록되었습니다.",
+    "data": {
+        "board_id": 123
+    }
+}
+```
+
+#### HTML 템플릿에 data-ajax 속성 추가
+
+**기본 사용 (data-redirect 지정)**:
+```html
+<!-- 성공 시 /member/login.jsp로 이동 -->
+<form name="form1" method="post" data-ajax="true" data-redirect="/member/login.jsp">
+    <input type="email" name="email">
+    <input type="text" name="name">
+    <button type="submit">등록</button>
+</form>
+```
+
+**템플릿 변수 사용**:
+```html
+<!-- 수정 페이지: 성공 시 상세 페이지로 이동 -->
+<form name="form1" method="post" data-ajax="true" data-redirect="board_view.jsp?id={{board_id}}">
+    <input type="text" name="title">
+    <button type="submit">수정</button>
+</form>
+```
+
+**커스텀 핸들러 사용 (서버 응답 데이터 필요시)**:
+```html
+<!-- 등록 후 서버에서 반환된 ID로 이동 -->
+<form name="form1" method="post" data-ajax="true" data-success="handleBoardFormSuccess">
+    <input type="text" name="title">
+    <button type="submit">등록</button>
+</form>
+```
+
+```javascript
+// common.js
+function handleBoardFormSuccess(data, form) {
+    const boardId = data.data && data.data.board_id;
+    if (boardId) {
+        setTimeout(() => {
+            window.location.href = 'board_view.jsp?id=' + boardId;
+        }, 1000);
+    }
+}
+```
+
+#### AJAX 처리 우선순위
+
+1. **data-success 핸들러**: 커스텀 함수가 있으면 실행
+2. **data-redirect 속성**: 핸들러가 없으면 지정된 URL로 이동
+3. **아무것도 없으면**: Toast 메시지만 표시
+
+#### Toast 메시지
+
+- **성공**: 초록색 Toast (3초 후 자동 사라짐)
+- **실패**: 빨간색 Toast (3초 후 자동 사라짐)
+- 폼은 자동으로 복구 (에러 시)
+- 로딩 중 버튼 비활성화 + 스피너 표시
+
+#### 에러 코드 사용 (선택사항)
+
+```jsp
+// 에러 코드 없이 (권장 - 단순한 경우)
+j.error("이메일이 중복되었습니다.");
+
+// 에러 코드 포함 (필요시 - 다국어/클라이언트 분기 처리)
+j.error("DUPLICATE_EMAIL", "이미 등록된 이메일입니다.");
+```
+
+**에러 코드가 필요한 경우**:
+- 클라이언트에서 에러 타입별 다른 처리
+- 다국어 지원 (클라이언트에서 메시지 변환)
+- 에러 로깅/모니터링
+
+**현재 프로젝트처럼 단순한 경우**: 에러 코드 없이 사용 권장
 
 ---
 

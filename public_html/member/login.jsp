@@ -23,10 +23,9 @@ if(m.isPost() && f.validate()) {
         auth.put("user_email", info.s("email"));
         auth.save();
 
-        m.jsAlert(info.s("name") + "님 환영합니다!");
-        m.jsReplace("/");
+        j.success(info.s("name") + "님 환영합니다!");
     } else {
-        m.jsError("이메일 또는 비밀번호가 올바르지 않습니다.");
+        j.error("이메일 또는 비밀번호가 올바르지 않습니다.");
     }
     return;
 }
@@ -36,7 +35,6 @@ p.setLayout("auth");
 p.setBody("member.login");
 p.setVar("title", "로그인");
 p.setVar("form_script", f.getScript());
-
 p.display();
 
 %>

@@ -19,21 +19,16 @@ DataSet list = lm.getDataSet();
 
 // 날짜 포맷 추가
 while(list.next()) {
-    String regDate = list.s("reg_date");
-    String formatted = m.time("yyyy-MM-dd HH:mm", regDate);
-    list.put("reg_date_format", formatted);
+    list.put("reg_date_format", m.time("yyyy-MM-dd HH:mm", list.s("reg_date")));
 }
-int total = lm.getTotalNum();
-String pager = lm.getPaging();
 
 p.setLayout("main");
 p.setBody("board.board_list");
 p.setLoop("list", list);
 p.setVar("title", "게시판");
-p.setVar("total", total);
-p.setVar("pager", pager);
+p.setVar("total", lm.getTotalNum());
+p.setVar("pager", lm.getPaging());
 p.setVar("form_script", f.getScript());
-
 p.display();
 
 %>

@@ -12,7 +12,7 @@ if(m.isPost() && f.validate()) {
     // 비밀번호 확인 (비교가 필요한 경우만 변수화)
     String passwd = f.get("passwd");
     if(!passwd.equals(f.get("passwd_confirm"))) {
-        m.jsError("비밀번호가 일치하지 않습니다.");
+        j.error("비밀번호가 일치하지 않습니다.");
         return;
     }
 
@@ -21,7 +21,7 @@ if(m.isPost() && f.validate()) {
     // 이메일 중복 체크 (메소드 호출에 필요한 경우만 변수화)
     String email = f.get("email");
     if(user.isDuplicateEmail(email)) {
-        m.jsError("이미 등록된 이메일입니다.");
+        j.error("이미 등록된 이메일입니다.");
         return;
     }
 
@@ -34,10 +34,9 @@ if(m.isPost() && f.validate()) {
     user.item("status", 1);
 
     if(user.insert()) {
-        m.jsAlert("회원가입이 완료되었습니다.");
-        m.jsReplace("/member/login.jsp");
+        j.success("회원가입이 완료되었습니다.");
     } else {
-        m.jsError("회원가입 실패: " + user.getErrMsg());
+        j.error("회원가입 실패: " + user.getErrMsg());
     }
     return;
 }
@@ -47,7 +46,6 @@ p.setLayout("auth");
 p.setBody("member.register");
 p.setVar("title", "회원가입");
 p.setVar("form_script", f.getScript());
-
 p.display();
 
 %>

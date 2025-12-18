@@ -8,8 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // 테이블 행 클릭 이벤트
     initTableRowClick();
 
-    // 폼 제출 시 이중 클릭 방지
-    preventDoubleSubmit();
+    // AJAX 폼 처리
+    initAjaxForms();
 });
 
 // 현재 페이지 네비게이션 하이라이트
@@ -47,24 +47,125 @@ function initTableRowClick() {
     });
 }
 
-// 폼 이중 제출 방지
-function preventDoubleSubmit() {
-    const forms = document.querySelectorAll('form');
+// AJAX 폼 처리
+function initAjaxForms() {
+    const ajaxForms = document.querySelectorAll('form[data-ajax="true"]');
 
-    forms.forEach(form => {
-        form.addEventListener('submit', function() {
+    ajaxForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
             const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn ? submitBtn.innerHTML : '';
+
+            // 로딩 상태
             if (submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>처리 중...';
-
-                // 5초 후 다시 활성화 (실패 시를 대비)
-                setTimeout(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = submitBtn.getAttribute('data-original-text') || '제출';
-                }, 5000);
             }
+
+            // FormData 생성
+            const formData = new FormData(this);
+
+            // AJAX 요청
+            fetch(this.action || window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success === true) {
+                    // 성공 메시지
+                    showToast(data.message || '처리되었습니다.', 'success');
+
+                    // 커스텀 성공 핸들러 (우선순위 1)
+                    const successHandler = form.getAttribute('data-success');
+                    if (successHandler && typeof window[successHandler] === 'function') {
+                        window[successHandler](data, form);
+                    }
+                    // data-redirect 속성으로 리다이렉트 (우선순위 2)
+                    else {
+                        const redirectUrl = form.getAttribute('data-redirect');
+                        if (redirectUrl) {
+                            setTimeout(() => {
+                                window.location.href = redirectUrl;
+                            }, 1000);
+                        }
+                    }
+                } else {
+                    // 에러 메시지
+                    showToast(data.message || '오류가 발생했습니다.', 'danger');
+
+                    // 폼 복구
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    }
+
+                    // 커스텀 에러 핸들러
+                    const errorHandler = form.getAttribute('data-error');
+                    if (errorHandler && typeof window[errorHandler] === 'function') {
+                        window[errorHandler](data);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('AJAX Error:', error);
+                showToast('네트워크 오류가 발생했습니다.', 'danger');
+
+                // 폼 복구
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            });
         });
+    });
+}
+
+// Toast 메시지 표시
+function showToast(message, type = 'info') {
+    // Toast 컨테이너 확인/생성
+    let toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.setAttribute('aria-live', 'polite');
+        toastContainer.setAttribute('aria-atomic', 'true');
+        document.body.appendChild(toastContainer);
+    }
+
+    // Toast 요소 생성
+    const toastId = 'toast-' + Date.now();
+    const bgClass = type === 'success' ? 'bg-success' :
+                    type === 'danger' ? 'bg-danger' :
+                    type === 'warning' ? 'bg-warning' : 'bg-info';
+
+    const toastHtml = `
+        <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+
+    // Toast 표시
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, {
+        autohide: true,
+        delay: 3000
+    });
+
+    toast.show();
+
+    // Toast 제거
+    toastElement.addEventListener('hidden.bs.toast', function() {
+        this.remove();
     });
 }
 
@@ -118,4 +219,18 @@ function getCookie(name) {
 // 쿠키 삭제
 function deleteCookie(name) {
     document.cookie = name + '=; Max-Age=-99999999;';
+}
+
+// 게시글 작성/수정 성공 핸들러
+function handleBoardFormSuccess(data, form) {
+    const boardId = data.data && data.data.board_id;
+    if (boardId) {
+        setTimeout(() => {
+            window.location.href = 'board_view.jsp?id=' + boardId;
+        }, 1000);
+    } else {
+        setTimeout(() => {
+            window.location.href = 'board_list.jsp';
+        }, 1000);
+    }
 }
