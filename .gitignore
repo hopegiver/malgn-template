@@ -20,7 +20,6 @@ hs_err_pid*
 *.sql
 !schema.sql
 malgn.iml
-build.xml
 resin-web.xml
 config.xml
 .Xauthority
