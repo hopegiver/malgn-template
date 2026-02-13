@@ -29,7 +29,7 @@ config.xml
 .mozilla/
 .ssh/
 .idea/
-.claude/
+.claude/settings.local.json
 .vscode/
 data/
 logs/
