@@ -16,9 +16,6 @@
 hs_err_pid*
 
 # etc
-*.sh
-*.sql
-!schema.sql
 malgn.iml
 resin-web.xml
 config.xml
