@@ -40,4 +40,3 @@ schema.sql            DB 스키마
 ## 주요 파일
 - `GUIDE.md` — 맑은프레임워크 AI 코딩 가이드 (상세)
 - `schema.sql` — DB 테이블 스키마
-- `public_html/api/README.md` — REST API 문서
