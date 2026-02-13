@@ -1,61 +1,85 @@
 # 맑은프레임워크 웹사이트 템플릿
 
-**맑은프레임워크**를 사용한 웹사이트 개발 템플릿 프로젝트입니다.
+**맑은프레임워크** 기반 웹사이트 개발 템플릿입니다.
 
-Bootstrap 5 기반의 반응형 디자인으로 회원 시스템, 게시판, 신청 폼 등 일반적인 웹사이트에 필요한 기본 기능을 제공합니다.
+Bootstrap 5 반응형 디자인으로 회원 시스템, 게시판, 신청 폼, REST API 등 기본 기능을 제공하며, **Claude Code와 MCP를 활용한 바이브코딩 표준화**가 적용되어 있습니다.
 
 ---
 
-## ⚠️ AI 개발 시 필수 사항
+## 시작하기
 
-**AI를 사용하여 이 프로젝트를 개발하는 경우, 반드시 다음 순서로 진행하세요:**
-
-### 1. 맑은프레임워크 공식 문서 클론 (필수)
-
-먼저 `docs/` 폴더에 맑은프레임워크 공식 문서를 클론하세요:
+### 빠른 시작 (Claude Code 사용)
 
 ```bash
-# 프로젝트 루트에서 실행
-git clone https://github.com/malgnsoft/malgnsoft.github.io.git docs
+git clone https://github.com/hopegiver/malgn-template.git my-project
+cd my-project
+claude
 ```
 
-**중요**: 이 문서에는 맑은프레임워크의 모든 API와 사용법이 상세히 설명되어 있습니다. AI가 올바른 코드를 작성하려면 반드시 이 문서를 참조해야 합니다.
+Claude Code가 자동으로 `CLAUDE.md`, 코딩 규칙, MCP 도구를 로드합니다.
+상세한 온보딩 절차는 **`ONBOARDING.md`** 를 참고하세요.
 
-### 2. AI에게 필수 문서 읽히기
+### 수동 설정
 
-AI 개발 시 다음 문서들을 순서대로 읽히세요:
-
-1. **`GUIDE.md`** - 이 프로젝트의 AI 코딩 가이드 (필독)
-2. **`docs/`** - 맑은프레임워크 공식 문서 (API 참조)
-3. **`schema.sql`** - 데이터베이스 구조 참고 (프로젝트별로 변경 필요)
-
-### 3. 코딩 규칙 준수
-
-- `GUIDE.md`에 명시된 체크리스트를 준수하여 코드를 작성하세요
-- 맑은프레임워크의 코딩 패턴과 규칙을 이해한 후 개발을 시작하세요
-
-**중요**: 맑은프레임워크는 고유한 코딩 패턴과 규칙을 가지고 있어, 이를 이해하지 못하면 프레임워크와 맞지 않는 코드가 생성될 수 있습니다.
-
-**참고**: `schema.sql`은 샘플/참고용이며, 실제 프로젝트마다 필요에 따라 변경하여 사용합니다.
+1. DB 생성 후 `schema.sql` 실행
+2. `public_html/WEB-INF/config.xml`에 JNDI 설정
+3. `ant compile`로 DAO 컴파일
+4. WAS(Tomcat/Resin) 배포
 
 ---
 
-## 프로젝트 개요
+## Claude Code 연동
 
-### 주요 기능
+이 템플릿에는 Claude Code 바이브코딩을 위한 표준 설정이 포함되어 있습니다.
+
+### MCP (Model Context Protocol)
+
+맑은프레임워크 전용 MCP 서버가 연결되어 코딩 규칙, 패턴 템플릿, 클래스 정보, 문서를 실시간으로 제공합니다.
+
+| 도구 | 기능 |
+|------|------|
+| `get_context` | 작업별 규칙+패턴+클래스 일괄 조회 |
+| `get_pattern` | 코드 패턴 템플릿 (13종) |
+| `validate_code` | 코드 규칙 위반 검증 |
+| `get_class` | 클래스 메소드 상세 조회 |
+| `get_rules` | 코딩 규칙 조회 |
+| `get_doc` / `search_docs` | 프레임워크 문서 조회 |
+
+### 커스텀 커맨드
+
+| 커맨드 | 기능 | 예시 |
+|--------|------|------|
+| `/project:crud` | CRUD 전체 생성 (DAO+JSP+HTML) | `/project:crud tb_notice` |
+| `/project:api` | REST API 엔드포인트 생성 | `/project:api tb_notice` |
+| `/project:schema` | 테이블 스키마 생성 | `/project:schema tb_faq FAQ` |
+| `/project:new-page` | 단일 페이지 생성 | `/project:new-page main/about` |
+| `/project:validate` | 코드 규칙 검증 | `/project:validate` |
+| `/project:review` | 코드 리뷰 | `/project:review` |
+
+### 자동 검증 Hook
+
+JSP, HTML, Java(DAO) 파일 작성/수정 시 Hook이 자동 실행되어 맑은프레임워크 규칙 위반을 감지합니다.
+
+---
+
+## 주요 기능
 
 - **회원 시스템**: 회원가입, 로그인, 로그아웃 (SHA-256 암호화)
 - **게시판**: CRUD, 검색, 페이징, 작성자 권한 확인
-- **신청 폼**: 문의/신청 접수 기능 (AJAX 처리)
-- **반응형 디자인**: Bootstrap 5 기반 모바일 지원
+- **신청 폼**: 문의/신청 접수 (AJAX 처리)
+- **REST API**: JWT 인증, CORS, 완전한 CRUD 지원
+- **반응형 디자인**: Bootstrap 5 모바일 지원
 
-### 기술 스택
+---
 
-- **프레임워크**: 맑은프레임워크
-- **UI**: Bootstrap 5
-- **서버**: JSP/Servlet (Java)
-- **데이터베이스**: MySQL (또는 호환 DB)
-- **템플릿 엔진**: 맑은프레임워크 내장 템플릿 엔진
+## 기술 스택
+
+- **백엔드**: JSP/Servlet, 맑은프레임워크 (malgn.jar)
+- **프론트**: Bootstrap 5, 맑은템플릿 엔진
+- **DB**: MySQL (JNDI 연결)
+- **API**: RESTful + JWT 인증
+- **빌드**: Ant
+- **AI**: Claude Code + MCP
 
 ---
 
@@ -63,104 +87,70 @@ AI 개발 시 다음 문서들을 순서대로 읽히세요:
 
 ```
 malgn-template/
-├── GUIDE.md                   # ⭐ AI 코딩 가이드 (필독)
-├── schema.sql                 # 데이터베이스 스키마 (샘플/참고용)
+├── CLAUDE.md                  # Claude Code 프로젝트 설명 (자동 로드)
+├── GUIDE.md                   # 맑은프레임워크 AI 코딩 가이드
+├── ONBOARDING.md              # 신규 직원 온보딩 가이드
+├── schema.sql                 # DB 스키마
 ├── build.xml                  # Ant 빌드 설정
-├── docs/                      # 📚 맑은프레임워크 공식 문서 (클론 필요)
+├── .mcp.json                  # MCP 서버 연결 설정
 │
-├── src/
-│   └── dao/                   # DAO 클래스 (Java)
-│       ├── UserDao.java
-│       ├── BoardDao.java
-│       └── ApplyDao.java
+├── .claude/                   # Claude Code 설정
+│   ├── rules/malgn.md         # 코딩 규칙 (자동 로드)
+│   ├── settings.json          # 팀 공유 권한 + Hook 설정
+│   ├── commands/              # 커스텀 슬래시 커맨드
+│   │   ├── crud.md            # /project:crud
+│   │   ├── api.md             # /project:api
+│   │   ├── schema.md          # /project:schema
+│   │   ├── new-page.md        # /project:new-page
+│   │   ├── validate.md        # /project:validate
+│   │   └── review.md          # /project:review
+│   └── hooks/
+│       └── post-write.sh      # 파일 저장 시 자동 규칙 검증
 │
-└── public_html/
-    ├── init.jsp               # 공통 초기화 (인증, 객체 초기화)
+├── src/dao/                   # DAO 클래스 (Java)
+│   ├── UserDao.java
+│   ├── BoardDao.java
+│   └── ApplyDao.java
+│
+└── public_html/               # 웹 루트
+    ├── init.jsp               # 공통 초기화
     ├── index.jsp              # 루트 리다이렉트
-    │
-    ├── member/                # 회원 관련 JSP
-    │   ├── login.jsp
-    │   ├── logout.jsp
-    │   └── register.jsp
-    │
-    ├── main/                  # 메인 기능 JSP
-    │   ├── index.jsp
-    │   └── apply.jsp
-    │
+    ├── member/                # 회원 JSP
+    ├── main/                  # 메인 JSP
     ├── board/                 # 게시판 JSP
-    │   ├── board_list.jsp
-    │   ├── board_view.jsp
-    │   ├── board_write.jsp
-    │   ├── board_modify.jsp
-    │   └── board_delete.jsp
-    │
-    ├── html/                  # HTML 템플릿 (JSP와 분리)
-    │   ├── layout/
-    │   │   └── layout_main.html
-    │   ├── main/
-    │   ├── board/
-    │   └── member/
-    │
-    ├── css/
-    │   └── style.css          # 커스텀 스타일
-    │
-    ├── js/
-    │   └── common.js          # 공통 JavaScript
-    │
+    ├── api/                   # REST API
+    │   ├── init.jsp           # API 초기화 (JWT, CORS)
+    │   ├── index.jsp          # API 라우터
+    │   ├── auth.jsp           # 인증 API
+    │   ├── board.jsp          # 게시판 API
+    │   └── apply.jsp          # 신청 API
+    ├── html/                  # HTML 템플릿
+    │   ├── layout/            # 레이아웃
+    │   ├── main/              # 메인 템플릿
+    │   ├── board/             # 게시판 템플릿
+    │   └── member/            # 회원 템플릿
+    ├── css/style.css
+    ├── js/common.js
     └── WEB-INF/
         ├── config.xml         # 프레임워크 설정
-        ├── lib/
-        │   └── malgn.jar      # 맑은프레임워크 라이브러리
-        └── classes/           # 컴파일된 DAO 클래스
+        ├── web.xml            # 서블릿 설정
+        ├── lib/malgn.jar      # 프레임워크 라이브러리
+        └── classes/           # 컴파일된 DAO
 ```
 
 ---
 
-## 맑은프레임워크 코딩 규칙 준수
+## 참고 문서
 
-이 프로젝트는 맑은프레임워크의 모든 코딩 규칙을 엄격히 준수합니다.
-
-자세한 내용은 **`GUIDE.md`** 문서를 참조하세요.
-
-### 주요 규칙 요약
-
-- ✅ 명명 규칙: `UserDao user`, `DataSet info/list`
-- ✅ JSP import 금지 (외부 라이브러리는 DAO에서)
-- ✅ Postback 패턴: `if(m.isPost())` 후 `return` 필수
-- ✅ JSP/HTML 완전 분리
-- ✅ 예외 처리: try-catch 없음 (boolean 체크)
-- ✅ GET 파라미터: `m.rs()` (XSS 자동 필터)
-- ✅ POST 데이터: `f.get()` (원본 보존)
-- ✅ SQL Injection 방지: PreparedStatement 패턴
-- ✅ XSS 방지: 템플릿 자동 escape
-- ✅ 날짜 처리: VARCHAR(14) + `m.time()`
-- ✅ Null 체크 불필요 (프레임워크가 빈 문자열 반환)
-- ✅ DataSet 활용: `info.put()` 직접 사용
-- ✅ 불필요한 변수 선언 금지
-
----
-
-## 보안
-
-### 구현된 보안 기능
-
-- **비밀번호 암호화**: SHA-256 해시 (Malgn.sha256)
-- **SQL Injection 방지**: PreparedStatement 자동 사용
-- **XSS 방지**: 템플릿 엔진의 자동 escape
-- **인증 체크**: `if(!isLogin)` 패턴
-- **권한 체크**: 작성자 본인 확인
-- **CSRF 방지**: POST 방식만 허용 (삭제 등)
+| 문서 | 용도 |
+|------|------|
+| `CLAUDE.md` | Claude Code 프로젝트 컨텍스트 |
+| `GUIDE.md` | 맑은프레임워크 코딩 가이드 (상세) |
+| `ONBOARDING.md` | 신규 직원 온보딩 |
+| `schema.sql` | DB 테이블 스키마 |
 
 ---
 
 ## 라이선스
 
 맑은프레임워크의 라이선스를 따릅니다.
-
----
-
-## 참고 문서
-
-- **`GUIDE.md`** - AI 코딩 가이드 (필독)
-- **`docs/`** - 맑은프레임워크 공식 문서 (클론 필요)
-- **`schema.sql`** - 데이터베이스 스키마 샘플
