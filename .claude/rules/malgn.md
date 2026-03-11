@@ -1,10 +1,6 @@
 # 맑은프레임워크 핵심 규칙
 
-이 프로젝트는 맑은프레임워크(JSP) 기반이다. 상세 규칙/패턴/클래스 정보는 MCP 도구(`get_context`, `get_pattern`, `get_class`, `validate_code` 등)로 조회할 것.
-
-## 코딩 시 MCP 활용
-- 작업 시작: `get_context(task, table_name)` 로 규칙+패턴+클래스 일괄 조회
-- 코드 완성 후: `validate_code(code, file_type)` 로 규칙 위반 검증
+이 프로젝트는 맑은프레임워크(JSP) 기반이다. MCP 도구 활용법은 CLAUDE.md "작업 워크플로우" 참조.
 
 ## 절대 규칙
 - JSP 시작: `<%@ page contentType="text/html; charset=utf-8" %><%@ include file="/init.jsp" %><%`
