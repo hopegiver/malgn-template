@@ -58,8 +58,13 @@ if [[ "$FILE_PATH" == *.jsp ]]; then
   fi
 
   # 6. SQL 문자열 연결 체크
-  if echo "$CONTENT" | grep -qE '\+ *"' | grep -qi 'where\|select\|insert\|update\|delete'; then
+  if echo "$CONTENT" | grep -qiE '(where|select|insert|update|delete).*\+ *"'; then
     ERRORS="$ERRORS\n- SQL 문자열 연결 의심: ? 바인딩 파라미터 사용 권장"
+  fi
+
+  # 7. HTML 직접 작성 금지 (JSP는 로직만, HTML은 /html/ 템플릿으로 분리)
+  if echo "$CONTENT" | grep -qE '^\s*<(html|head|body|div|form|table|ul|ol|nav|header|footer|section|article|main|aside|p |h[1-6])[ >]'; then
+    ERRORS="$ERRORS\n- JSP에 HTML 직접 작성 금지: /html/ 폴더의 템플릿으로 분리"
   fi
 fi
 
