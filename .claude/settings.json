@@ -1,12 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ant compile:*)",
-      "Bash(git status:*)",
-      "Bash(git log:*)",
-      "Bash(git diff:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
+      "Read",
+      "Edit",
+      "Write",
+      "WebFetch",
+      "Bash",
       "mcp__malgn__*"
     ],
     "deny": [

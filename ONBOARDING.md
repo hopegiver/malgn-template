@@ -68,23 +68,14 @@ WAS(Tomcat/Resin)를 재시작하고 브라우저에서 확인합니다.
 
 | 커맨드 | 설명 | 예시 |
 |--------|------|------|
-| `/project:crud` | CRUD 전체 생성 | `/project:crud tb_notice` |
-| `/project:api` | REST API 생성 | `/project:api tb_notice` |
-| `/project:new-page` | 단일 페이지 생성 | `/project:new-page main/about` |
-| `/project:schema` | 테이블 스키마 생성 | `/project:schema tb_faq FAQ` |
-| `/project:validate` | 코드 규칙 검증 | `/project:validate board_list.jsp` |
-| `/project:review` | 코드 리뷰 | `/project:review` |
+| `/crud` | CRUD 전체 생성 | `/crud tb_notice` |
+| `/api` | REST API 생성 | `/api tb_notice` |
+| `/new-page` | 단일 페이지 생성 | `/new-page main/about` |
+| `/schema` | 테이블 스키마 생성 | `/schema tb_faq FAQ` |
+| `/validate` | 코드 규칙 검증 | `/validate board_list.jsp` |
+| `/review` | 코드 리뷰 | `/review` |
 
 ## 자동 검증
 
 JSP, HTML, Java(DAO) 파일을 작성하면 **Hook이 자동으로 규칙 위반을 체크**합니다.
 위반이 발견되면 Claude가 자동으로 수정 제안을 합니다.
-
-## 참고 문서
-
-| 문서 | 용도 |
-|------|------|
-| `GUIDE.md` | 맑은프레임워크 코딩 가이드 (상세) |
-| `public_html/api/README.md` | REST API 문서 |
-| `schema.sql` | DB 스키마 |
-| MCP `search_docs("키워드")` | 프레임워크 문서 검색 |

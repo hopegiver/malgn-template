@@ -37,5 +37,26 @@ schema.sql            DB 스키마
 - `validate_code` — 코드 규칙 위반 검증
 - `get_doc` / `search_docs` — 프레임워크 문서 조회
 
+## config.xml 설정 (`WEB-INF/config.xml`)
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <env>
+        <jndi>jdbc/myapp</jndi>              <!-- DB JNDI (필수) -->
+        <rojndi>jdbc/myapp_ro</rojndi>        <!-- 읽기 전용 DB (선택) -->
+        <mailHost>smtp.gmail.com</mailHost>   <!-- 메일 SMTP 호스트 -->
+        <mailFrom>noreply@example.com</mailFrom>
+        <siteUrl>https://example.com</siteUrl>
+        <siteName>My Website</siteName>
+        <encoding>utf-8</encoding>
+        <denyHtml>Y</denyHtml>                <!-- XSS 방지: HTML 태그 자동 제거 -->
+    </env>
+</config>
+```
+- 설정 읽기: `Config.get("siteName")`, `Config.getInt("mailPort", 587)`
+- 경로: `Config.getDocRoot()`, `Config.getUploadDir()`, `Config.getDataDir()`
+- 재로드: `Config.reload()` (재시작 불필요)
+
 ## 주요 파일
 - `schema.sql` — DB 테이블 스키마
+- `public_html/WEB-INF/config.xml` — 프레임워크 설정 (JNDI, 메일, 사이트 정보)
