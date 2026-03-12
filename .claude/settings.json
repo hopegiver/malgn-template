@@ -4,16 +4,29 @@
       "Read",
       "Edit",
       "Write",
+      "Glob",
+      "Grep",
       "WebFetch",
+      "WebSearch",
       "Bash",
       "mcp__malgn__*"
     ],
     "deny": [
-      "Bash(rm -rf:*)",
-      "Bash(git push --force:*)",
-      "Bash(git reset --hard:*)",
-      "Bash(git checkout .:*)",
-      "Bash(git clean -f:*)"
+      "Bash(rm -rf *)",
+      "Bash(rm -r *)",
+      "Bash(del *)",
+      "Bash(rmdir *)",
+      "Bash(git reset --hard*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git clean*)",
+      "Bash(curl*)",
+      "Bash(wget*)",
+      "Bash(powershell*)",
+      "Bash(cmd *)",
+      "Bash(sudo*)",
+      "Bash(eval*)",
+      "Bash(exec*)"
     ]
   },
   "hooks": {
